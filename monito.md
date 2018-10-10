@@ -3,7 +3,7 @@ Il y a trois algorithmes possibles pour créer des représentations des mots (wo
 
 ----------------------------------------------------------------------------------------------------------------------------------
 Embedding Layer.
-Dans le code "RNN+LSTM" on voit la façon simple, j'ai crée un Embedding Layer qui est en fait une couche qui est entrainé directement dedans le réseau des neurones.
+Dans le code "RNN+LSTM" on voit le plus basique, il y a un Embedding Layer qui est en fait une couche qui est entrainé directement dedans le réseau des neurones.
 
 ----------------------------------------------------------------------------------------------------------------------------------
 Word2Vec.
