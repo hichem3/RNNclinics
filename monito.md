@@ -15,4 +15,4 @@ En outre  j'ai mis le code "RNN+LSTM+word2vec" où il y a un algorithme qui entr
 
 ----------------------------------------------------------------------------------------------------------------------------------
 GlOve.
-Comme pour le cas précèdentl dans le code "" il y a un algorithme qui entraine une LSTM à partir d'un word embedding issu d’une très grande base de données pre-entrainé avec la méthode GlOve. Malheuresement, aussi ici les résultats sont assez mauvais, mais améliorables en changeant quelque paramètre.
+Comme pour le cas précèdentl dans le code "RNN+LSTM+GlOve" il y a un algorithme qui entraine une LSTM à partir d'un word embedding issu d’une très grande base de données pre-entrainé avec la méthode GlOve. Malheuresement, aussi ici les résultats sont assez mauvais, mais améliorables en changeant quelque paramètre.
