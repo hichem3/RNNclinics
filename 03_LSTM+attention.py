@@ -37,7 +37,7 @@ def softmax(x, axis=1):
 ###############################################################################
 maxlen = 300 #cutoff reviews, raise to 500
 training_samples = 2000 #raise to 20000
-val = 4+00 #raise to 5000
+val = 400 #raise to 5000
 test=val
 max_words = 5000 #vocabulary dimension, raise to 10000
 machine_vocab_size=2
