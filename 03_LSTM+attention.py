@@ -5,21 +5,41 @@ from keras.utils import to_categorical
 from keras.models import load_model, Model
 import numpy as np
 from keras.preprocessing import sequence
-from keras.activations import softmax
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
+from keras import backend as K
 import matplotlib.pyplot as plt
 from keras.datasets import imdb
 #%matplotlib inline
 
+def softmax(x, axis=1):
+    """Softmax activation function.
+    # Arguments
+        x : Tensor.
+        axis: Integer, axis along which the softmax normalization is applied.
+    # Returns
+        Tensor, output of softmax transformation.
+    # Raises
+        ValueError: In case `dim(x) == 1`.
+    """
+    ndim = K.ndim(x)
+    if ndim == 2:
+        return K.softmax(x)
+    elif ndim > 2:
+        e = K.exp(x - K.max(x, axis=axis, keepdims=True))
+        s = K.sum(e, axis=axis, keepdims=True)
+        return e / s
+    else:
+        raise ValueError('Cannot apply softmax to a tensor that is 1D')
+
 ###############################################################################
 #Parameters set-up
 ###############################################################################
-maxlen = 20 #cutoff reviews, raise to 500
-training_samples = 50 #raise to 20000
-val = 10 #raise to 5000
-test=val = 10
-max_words = 200 #vocabulary dimension, raise to 10000
+maxlen = 300 #cutoff reviews, raise to 500
+training_samples = 2000 #raise to 20000
+val = 4+00 #raise to 5000
+test=val
+max_words = 5000 #vocabulary dimension, raise to 10000
 machine_vocab_size=2
 Tx=maxlen
 Ty=1
@@ -31,14 +51,15 @@ m=training_samples #len(x_train)
 # Defined shared layers as global variables
 repeator = RepeatVector(Tx) 
 concatenator = Concatenate(axis=-1)
-densor1 = Dense(10, activation = "tanh") # check N units
-densor2 = Dense(1, activation = "relu") # check N units
+densor1 = Dense(10, activation = 'tanh')
+densor2 = Dense(1, activation = "relu")
 activator = Activation(softmax, name='attention_weights') # We are using a custom softmax(axis = 1) loaded in this notebook
 dotor = Dot(axes = 1)
-n_a = 32 #dimension of LSTM hidden states for the BiLSTM
-n_s = 64 #dimension of LSTM hidden states for the post-LSTM
+n_a = 32 #dimension of LSTM hidden states for the BiLSTM #haven't added dropout yet
+n_s = 64 #dimension of LSTM hidden states for the post-LSTM #haven't added dropout yet
 post_activation_LSTM_cell = LSTM(n_s, return_state = True)
-output_layer = Dense(machine_vocab_size, activation='sigmoid')
+output_layer = Dense(machine_vocab_size, activation=softmax)
+
 s0=np.zeros((m,n_s)) 
 c0=np.zeros((m,n_s))
 s0val=np.zeros((val,n_s)) 
@@ -68,8 +89,8 @@ def one_step_attention(a, s_prev):
     # Use densor1 to propagate concat through a small fully-connected neural network to compute the "intermediate energies" variable e
     e = densor1(concat)
     #print('e.shape',e.shape)#(?, 5000, 10)
+    energies=densor2(e)
     # Use densor2 to propagate e through a small fully-connected neural network to compute the "energies" variable energies.
-    energies = densor2(e)
     #print('energies',energies.shape)# (?, 5000, 1)
     # Use "activator" on "energies" to compute the attention weights "alphas"
     alphas = activator(energies)
@@ -112,33 +133,30 @@ def model_building(Tx, Ty, n_a, n_s, human_vocab_size,machine_vocab_size):
     #return_sequences: Whether to return the last output in the output sequence, or the full sequence.
     a = Bidirectional(LSTM(n_a, return_sequences=True))(X) #ENCODER
     # Step 2: Iterate for Ty steps
-    # no need if only 1 logistic output
-    for t in range(Ty):
     # Step 2.A: Perform one step of the attention mechanism to get back the context vector at step t
 
-        context = one_step_attention(a, s) #output is [?,1,64]
-        
-        # Step 2.B: Apply the post-attention LSTM cell to the "context" vector.
-        # Don't forget to pass: initial_state = [hidden state, cell state]
-        s, _, c = post_activation_LSTM_cell(context, initial_state=[s, c])  #DECODER
-        #print('s',s) #[?,64]
-        #print('_',_) #[?,64]
-        #print('c',c) #[?,64]
-        
-        # end of loop here ? to finish with single output
-        # Step 2.C: Apply Dense layer to the hidden state output of the post-attention LSTM
-        #out = output_layer(s) (output_layer =  Dense(len(machine_vocab), activation=softmax))
-        s = output_layer(s)
-        # Step 2.D: Append "out" to the "outputs" list
-        #outputs.append(out)
-        outputs.append(s)
+    context = one_step_attention(a, s) #output is [?,1,64]
+    
+    # Step 2.B: Apply the post-attention LSTM cell to the "context" vector.
+    # Don't forget to pass: initial_state = [hidden state, cell state]
+    s, _, c = post_activation_LSTM_cell(context, initial_state=[s, c])  #DECODER
+    #print('s',s) #[?,64]
+    #print('_',_) #[?,64]
+    #print('c',c) #[?,64]
+    
+    # Step 2.C: Apply Dense layer to the hidden state output of the post-attention LSTM
+    #out = output_layer(s) (output_layer =  Dense(len(machine_vocab), activation=softmax))
+    s = output_layer(s)
+    # Step 2.D: Append "out" to the "outputs" list
+    #outputs.append(out)
+    outputs.append(s)
     
     #print(len(outputs[:])) #Ty
     
     # Step 3: Create model instance taking three inputs and returning the list of outputs.
     model = Model(inputs=[X, s0, c0], outputs=outputs)
 
-    return model
+    return model,outputs,s
 
 ###############################################################################
 #Get the datas
@@ -149,7 +167,7 @@ word_index = imdb.get_word_index()
 ###############################################################################
 #Vectorizations
 ###############################################################################
-x_train = sequence.pad_sequences(train_data[:training_samples], maxlen=maxlen) #50,20
+x_train = sequence.pad_sequences(train_data[:training_samples], maxlen=maxlen) 
 x_val =  sequence.pad_sequences(train_data[training_samples:training_samples+val], maxlen=maxlen)
 x_test = sequence.pad_sequences(test_data[:test], maxlen=maxlen)
 
@@ -162,19 +180,21 @@ Y = np.array(list(map(lambda x: to_categorical(x, num_classes=machine_vocab_size
 x_val = np.array(list(map(lambda x: to_categorical(x, num_classes=max_words), x_val))) 
 y_val = np.array(list(map(lambda x: to_categorical(x, num_classes=machine_vocab_size), y_val)))
 
+#print(X.shape,Y.swapaxes(0,1).shape)
+out=list(Y.swapaxes(0,1)) 
+outval=list(y_val.swapaxes(0,1)) 
 
-out=list(Y.swapaxes(0,1)) #1x50x2
-outval=list(y_val.swapaxes(0,1))
+
 ###############################################################################
 #Model definition
 ###############################################################################
-model = model_building(Tx, Ty, n_a, n_s, max_words,machine_vocab_size)
+model,deout,des = model_building(Tx, Ty, n_a, n_s, max_words,machine_vocab_size)
 
 opt = Adam(lr=0.01, beta_1=0.9, beta_2=0.999, decay=0.01)
 
-model.compile(optimizer=opt,loss='binary_crossentropy',metrics=['acc'])
+model.compile(optimizer=opt,loss='categorical_crossentropy',metrics=['acc'])
 
-history = model.fit([X,s0,c0],out,epochs=10,batch_size=16,validation_data=([x_val,s0val,c0val], outval)) #increase batch size, epochs should be 10-17
+history = model.fit([X,s0,c0],out,epochs=10,batch_size=32,validation_data=([x_val,s0val,c0val], outval)) #increase batch size, epochs should be 10-17
 
 ###############################################################################
 #Validation
