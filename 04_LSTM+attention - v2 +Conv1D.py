@@ -152,16 +152,7 @@ def model_building(Tx, Ty, n_a, n_s, human_vocab_size):
         #print('c',c) #[?,64]
         
         # Step 2.C: Apply Dense layer to the hidden state output of the post-attention LSTM
-        #out = output_layer(s) (output_layer =  Dense(len(machine_vocab), activation=softmax))
-        
-        #s_dense = output_layer(s)
-        
-        #OSS:I'M PASSING THE RAW S
-        # Step 2.D: Append "out" to the "outputs" list
-        #outputs.append(out)
-        
-        #outputs_dense.append(s_dense)
-        
+        #out = output_layer(s) (output_layer =  Dense(len(machine_vocab), activation=softmax)
         outputs_pure.append(s)
     
     concat=outputs_pure[0]
