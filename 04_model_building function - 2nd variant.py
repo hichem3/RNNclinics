@@ -17,7 +17,8 @@ def model_building(Tx, Ty, n_a, n_s, human_vocab_size,machine_vocab_size):
     s = s0
     c = c0
     # Initialize empty list of outputs
-    outputs_pure = []
+    outputs_pure = [] #This will become a (10 x samples x 64) tensor which corresponds to 10 steps, each with 64 features, 
+    #output of the decoder but no yet densified. We'll apply 'dense' over all of them together.
 
     # Step 1: Define your pre-attention Bi-LSTM. Remember to use return_sequences=True.
     #return_sequences: Whether to return the last output in the output sequence, or the full sequence.
