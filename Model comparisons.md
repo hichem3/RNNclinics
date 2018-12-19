@@ -1,0 +1,26 @@
+| Method                         | Number of samples | Validation accuracy | Prediction accuracy | n_epochs | TOP | comments                                                                                 |
+|--------------------------------|-------------------|---------------------|---------------------|----------|-----|------------------------------------------------------------------------------------------|
+| Convolutional 1D by words      | 2500              | 0.819               | 0.80688             | 3        |     |                                                                                          |
+| Convolutional 1D by characters | 2500              | 0.767               | 0.772               | 4        |     |                                                                                          |
+| Convolutional (Evaluation.py)  | 2500              | 0.8548              | 0.8472              | 10       |     | this model is already hypertuned!                                                        |
+| GRU(64)                        | 2500              | 0.828               | 0.84                | 16       |     | maybe less then 16, but 8 wasn't better                                                  |
+| LSTM(64)                       | 2500              | 0.773               | 0.78272             | 20       |     | 16 may suffice, strange behaviour though                                                 |
+| stack of GRUs                  | 2500              | 0.811               | 0.81552             | 20       |     | underfitting, I shoud complexify it and train it more                                    |
+| stack of LSTMs                 | 2500              | 0.587               | 0.59                | 20       |     | (more elaborated network)                                                                |
+| LSTM+HierarchicalAtt           | 2500              | -                   | 0.845               | 20       | +++ | already hypertuned, but can be regularized more                                          |
+| LSTM+selfAttention             | 2500              | -                   | -                   | 10       |     |                                                                                          |
+| LSTM+softAttention             | 2500              | -                   | -                   | 10       |     |                                                                                          |
+| LSTM+Attention(Ng)             | 2500              | 0.783               | 0.736               | 5        |     | it misses regularization                                                                 |
+| LSTM+AttentionContext          | 2500              | 0.84                | 0.839               | 5        | +++ | Good, improve it, don't need many epochs, 10's too much                                  |
+| Conv+LSTM+attention            | 2500              | 0.799               | 0.803               | 6        |     | I could complexify it, train it longer then regularize it                                |
+|                                |                   |                     |                     |          |     |                                                                                          |
+| Convolutional 1D by words      | 20000             | -                   | -                   | -        |     |                                                                                          |
+| Convolutional 1D by characters | 20000             | 0.8838              | 0.8372              | 15       |     | trained only till 90%!!, Should be trained a lot more (30 epochs) and   well regularized |
+| Convolutional (Evaluation.py)  | 20000             | 0.9064              | 0.9007              | 10       |     | model already hypertuned!                                                                |
+| GRU(32)                        | 20000             | 0.8694              | 0.86784             | 16       |     | 8 would be enough, obs: not trained at all!! Only 0.879 of training acc!                 |
+| LSTM(100)                      | 20000             | 0.8598              | 0.86284             | 20       |     | good since epoch 11                                                                      |
+| LSTM+HierarchicalAttention     | 20000             | -                   | 0.8814              | 20       |     | can achieve more if trained longer                                                       |
+| LSTM+Attention(Ng)             | 20000             | 0.7696              | 0.7672              | 10       |     | best at epoch 9                                                                          |
+| Conv+LSTM+attention            | 20000             | -                   | -                   | -        |     |                                                                                          |
+You can now import Markdown table code directly using File/Paste table data... dialog.
+
