@@ -22,5 +22,4 @@
 | LSTM+HierarchicalAttention     | 20000             | -                   | 0.8814              | 20       |     | can achieve more if trained longer                                                       |
 | LSTM+Attention(Ng)             | 20000             | 0.7696              | 0.7672              | 10       |     | best at epoch 9                                                                          |
 | Conv+LSTM+attention            | 20000             | -                   | -                   | -        |     |                                                                                          |
-You can now import Markdown table code directly using File/Paste table data... dialog.
 
