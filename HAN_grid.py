@@ -14,9 +14,8 @@ from sklearn.model_selection import train_test_split, RandomizedSearchCV,Stratif
 from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.metrics import make_scorer,f1_score,recall_score,fbeta_score,\
 precision_recall_fscore_support,accuracy_score,precision_score
-from lr_finder import LRFinder
-
-
+#from lr_finder import LRFinder
+from keras.callbacks import LearningRateScheduler
 ##############################################################################
 #layers.py
 
@@ -300,7 +299,7 @@ class HAN(Model):
         # We get the final representation by applying our attention mechanism
         # to the encoded sentences
         doc_summary = AttentionLayer(name='sentence_attention')(doc_rep)
-        print(doc_summary.shape)
+        
         out_tensor = Dense(
             self.output_size, activation='sigmoid', name='class_prediction' #softmax for categories
         )(doc_summary)
@@ -371,7 +370,7 @@ logger.addHandler(stdout)
 
 MAX_WORDS_PER_SENT = 100 #TUNE?
 MAX_SENT = 15 #TUNE?
-max_words = 2000 #raise to 10000
+max_words = 1000 #raise to 10000
 embedding_dim = 300
 TEST_SPLIT = 0.2
 
@@ -457,8 +456,8 @@ y = np.asarray(target)#to_categorical(labels)
 
 # We make a train/test split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SPLIT)
-X = X_train[:2000]
-Y = y_train[:2000]
+X = X_train[:500]
+Y = y_train[:500]
 x_test = X_test[:100]
 y_test = y_test[:100]
 #####################################################
@@ -563,15 +562,19 @@ def create_model(optimizer,
     
     han_model.compile(optimizer=optimizer, loss='binary_crossentropy')
     
+    #attentionWeights = han_model.predict_sentence_attention(X)
+
+    #np.savetxt("attention.csv", attentionWeights, delimiter=",", fmt='%s', header=None)
+    
     return han_model
 
 f=open('HAN-gridoutput.txt','w')
-for i in range(1):
+for i in range(1): #No need for a double cross validation
     #epochs = [int((word_encoding_dim+sentence_encoding_dim)/32+np.log2(word_encoding_dim+sentence_encoding_dim))]
     batch_size = [16,32,64,128]
-    epochs = [36]#list(range(8,14,2))
-    word_encoding_dim = [32]#[64,100,128,200,256]
-    sentence_encoding_dim = [32]#[16,32,64,100,128]
+    epochs = [50]
+    word_encoding_dim = [64,100,128,200,256]
+    sentence_encoding_dim = [16,32,64,100,128]
     
     #GRU params
     #activation = ['hard_sigmoid','softmax','elu','selu','softplus','softsign','relu',
@@ -603,8 +606,8 @@ for i in range(1):
     dropout=[0.0, 0.2,0.3,0.4,0.5]
     recurrent_dropout=[0.0, 0.2,0.3,0.4,0.5]
     
-    optimizer = ['Adadelta','Adam','Adamax','Nadam'] #tune lr, (beta1,beta2),decay,amsgrad(T or F only for Adam)
-    
+    optimizer = ['Adadelta','Adam','Adamax','Nadam']
+    #Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False,clipvalue,clipnorm)
     
     param_grid = dict(word_encoding_dim = word_encoding_dim,
                       sentence_encoding_dim = sentence_encoding_dim,
@@ -643,43 +646,54 @@ for i in range(1):
     
     model = KerasClassifier(build_fn=create_model,verbose=1 )
     
-    grid = RandomizedSearchCV(cv=2,n_iter=1,
+    grid = RandomizedSearchCV(cv=2,n_iter=2,
                               estimator=model, param_distributions=param_grid,
-                              #n_jobs=-1,
+                              n_jobs=-1,
                               scoring=scoring,
                               refit='acc', #or f1, f2
                               return_train_score = True
                               #random_state = 42
                               )
     
-    """consider using the exp decay at most
-    lr_finder = LRFinder(min_lr=1e-5, 
-                                 max_lr=1e-2, 
-                                 steps_per_epoch=np.ceil(epochs/batch_size), 
-                                 epochs=3)
-    """                              
-    grid_result = grid.fit(X, Y)#, callbacks=[lr_finder])
     
-    """    
+    """#fix
+    trainingDim = 500*3/4 
+    lr_finder = LRFinder(min_lr=1e-5, 
+                                 max_lr=1e-1, 
+                                 steps_per_epoch=np.ceil(trainingDim/batch_size[1]), 
+                                 epochs=3)
+    """
+    def step_decay_schedule(initial_lr=1e-4, decay_factor=0.75, step_size=10):
+        '''
+        Wrapper function to create a LearningRateScheduler with step decay schedule.
+        '''
+        def schedule(epoch):
+            return initial_lr * (decay_factor ** np.floor(epoch/step_size))
+        
+        return LearningRateScheduler(schedule)
+
+    lr_sched = step_decay_schedule(initial_lr=1e-4, decay_factor=0.75, step_size=2)    
+                       
+    grid_result = grid.fit(X, Y, callbacks=[lr_sched])    
+    
+    """   
     lr_finder.plot_loss('lr_loss.png')
     lr_finder.plot_lr('lr.png')
     """
+    
     # summarize results
     print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
     
-    #mean_acc = grid_result.cv_results_['mean_test_acc']
+    mean_acc = grid_result.cv_results_['mean_test_acc']
     mean_f1 = grid_result.cv_results_['mean_test_f1']
     mean_f2 = grid_result.cv_results_['mean_test_f2']
     mean_rec = grid_result.cv_results_['mean_test_rec']
     params = grid_result.cv_results_['params']
     #look into grid_result_v: rank_test_rec, rank_test_f2 give a ranking of the models for both parameters++
     
-    f.write("%d tour\n "%i)
-    #f.write('epochs: %d\n'%epochs)
-    #f.write('batch_dim: %d\n'%batch_size)
-    for mean1, mean2, mean3, param in zip(mean_f1, mean_f2, mean_rec, params):
-        f.write("f1 %f f2 %f rec %f with: %r\n" % (mean1, mean2, mean3, param))
-    f.write('---------------------------------------------\n')
+    for mean0, mean1, mean2, mean3, param in zip(mean_acc, mean_f1, mean_f2, mean_rec, params):
+        f.write("acc %f f1 %f f2 %f rec %f with: %r\n" % (mean0, mean1, mean2, mean3, param))
+    f.write('---------------------------------------------------------------\n')
 
 res = pd.DataFrame(grid.cv_results_)
 res.to_csv('HAN_params.csv')
@@ -698,6 +712,7 @@ f.close()
 
 print('y_pred:',y_pred)
 print('y_test',y_test)
+
 
 
 
