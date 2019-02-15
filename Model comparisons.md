@@ -11,7 +11,7 @@
 | LSTM+selfAttention             | 2500              | -                   | -                   | 10       |     |                                                                                          |
 | LSTM+softAttention             | 2500              | -                   | -                   | 10       |     |                                                                                          |
 | LSTM+Attention(Ng)             | 2500              | 0.783               | 0.736               | 5        |     | it misses regularization                                                                 |
-| LSTM+AttentionContext          | 2500              | 0.84                | 0.839               | 5        | +++ | Good, improve it, don't need many epochs, 10's ok                                  |
+| LSTM+AttentionContext          | 2500              | 0.84                | 0.839               | 5        | +++ | Good, improve it, don't need many epochs, 10's too much                                  |
 | Conv+LSTM+attention            | 2500              | 0.799               | 0.803               | 6        |     | I could complexify it, train it longer then regularize it                                |
 |                                |                   |                     |                     |          |     |                                                                                          |
 | Convolutional 1D by words      | 20000             | -                   | -                   | -        |     |                                                                                          |
@@ -22,4 +22,3 @@
 | LSTM+HierarchicalAttention     | 20000             | -                   | 0.8814              | 20       |     | can achieve more if trained longer                                                       |
 | LSTM+Attention(Ng)             | 20000             | 0.7696              | 0.7672              | 10       |     | best at epoch 9                                                                          |
 | Conv+LSTM+attention            | 20000             | -                   | -                   | -        |     |                                                                                          |
-
