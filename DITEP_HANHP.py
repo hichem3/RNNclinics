@@ -1,7 +1,4 @@
-print('HAN hyperopt')
-out_file = 'HAN_hp.csv'
-##
-#
+####################################################################################################
 #
 #Yang, Zichao, et al. "Hierarchical attention networks for document classification." 
 #Proceedings of the 2016 Conference of the North American Chapter of the Association 
@@ -9,7 +6,10 @@ out_file = 'HAN_hp.csv'
 #
 #Code inspired from: FlorisHoogenboom.
 #https://github.com/FlorisHoogenboom/keras-han-for-docla
-##
+####################################################################################################
+
+print('HAN hyperopt. TPE Bayesian Hyperparameter Search')
+out_file = 'HAN_hp.csv'
 
 import matplotlib
 matplotlib.use('agg')
@@ -587,7 +587,7 @@ writer.writerow(['recall','f2','f1','accuracy','loss','params'])
 of_connection.close()
 
 
-MAX_EVALS = 3
+MAX_EVALS = 10
 
 # Optimize
 best = fmin(fn = create_model, space = space, algo = tpe.suggest, max_evals = MAX_EVALS, trials = bayes_trials)
@@ -601,72 +601,3 @@ f=open('HAN_hp_aux.csv','w')
 writer = csv.writer(f)
 writer.writerow(bayes_trials)
 f.close()
-
-"""
-
-# summarize results
-print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
-
-mean_acc = grid_result.cv_results_['mean_test_acc']
-mean_f1 = grid_result.cv_results_['mean_test_f1']
-mean_f2 = grid_result.cv_results_['mean_test_f2']
-mean_rec = grid_result.cv_results_['mean_test_rec']
-params = grid_result.cv_results_['params']
-#look into grid_result_v: rank_test_rec, rank_test_f2 give a ranking of the models for both parameters++
-
-for mean0, mean1, mean2, mean3, param in zip(mean_acc, mean_f1, mean_f2, mean_rec, params):
-    f.write("acc %f f1 %f f2 %f rec %f with: %r\n" % (mean0, mean1, mean2, mean3, param))
-f.write('---------------------------------------------------------------\n')
-
-
-logger.info('Training done')
-########################################## Save the results of the grid
-res = pd.DataFrame(grid.cv_results_)
-res.to_csv('HAN_params.csv')
-
-########################################## Test here
-y_pred = grid.best_estimator_.predict(X_test)
-
-f.write("The final accuracy is: ")
-somme = 0
-for i in range(len(y_test)):
-    if y_test[i]==y_pred[i]:
-        somme+=1
-print(somme,len(y_test))
-avg = somme/len(y_test)
-f.write("%f"%avg)
-f.close()
-
-print('y_pred:',y_pred)
-print('y_test',y_test)
-
-########################################## Confusion Matrix - Test data
-# Using metrics.confusion_matrix function
-cm = confusion_matrix(y_test, y_pred)
-data = cm.tolist()
-print("cm returned from sklearn:", data)
-
-########################################## ROC-AUC Curve
-probs = grid.best_estimator_.predict_proba(X_test)
-probs = probs[:, 1]
-fpr, tpr, thresholds = roc_curve(y_test,probs)
-AUC =  roc_auc_score(y_test, probs)
-plt.figure()
-plt.plot([0, 1], [0, 1], linestyle='--')
-plt.plot(fpr, tpr, marker='.')
-plt.savefig('roc_auc.png')
-print('AUC=',AUC)
-
-########################################## Precision-Recall Curve
-precision, recall, thresholds = precision_recall_curve(y_test, probs)
-f1 = f1_score(y_test, y_pred)
-auc = auc(recall, precision)
-ap = average_precision_score(y_test, probs)
-plt.figure()
-plt.plot([0, 1], [0.5, 0.5], linestyle='--')
-plt.plot(recall, precision, marker='.')
-plt.xlabel('Recall')
-plt.ylabel('Precision')
-plt.savefig('precision_recall.png')
-print('\nf1=',f1,'auc=',auc,'ap=',ap)
-"""
