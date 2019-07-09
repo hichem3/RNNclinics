@@ -1,6 +1,32 @@
 # Author: Enrico Sartor
 # follows HANmodel.py and ProcesingHAN.py
 
+##############################################################################
+# Create a logger to provide info on the state of the
+# script
+stdout = logging.StreamHandler(sys.stdout)
+stdout.setFormatter(logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+))
+logger = logging.getLogger('default')
+logger.setLevel(logging.INFO)
+logger.addHandler(stdout)
+
+##############################################################################
+# set hyperparameters
+
+MAX_WORDS_PER_SENT = 40
+MAX_SENT = 80
+MAX_VOC_SIZE = 10000 
+GLOVE_DIM = 256  
+TEST_SPLIT = 0.2
+word_encoding_dim = 70
+sentence_encoding_dim = 50
+l1 = 0.0015
+l2 = 0.025
+dropout = 0.
+batch_size = 96
+
 #####################################################
 # Model Training                                    #
 #####################################################
@@ -30,6 +56,8 @@ history = han_model.fit(
     #callbacks=[checkpoint_saver]
 )
 
+################################
+# check results
 
 threshold = 0.5
 y_pred = han_model.predict(X_test)
