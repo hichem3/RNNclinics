@@ -92,3 +92,54 @@ cv = StratifiedShuffleSplit(n_splits=5, test_size=0.15)
 scoring = {'AUC': 'roc_auc', 'Recall': 'recall'}
 
 ## then: Searching for best transformer
+
+
+## loading data for HAN model
+# assuming data is ordered, y == y_rep
+X, y = np.loadtxt('X_HAN.txt'), np.loadtxt('y_han.txt')
+embedding_matrix = np.loadtxt('embedding_matrix_HAN.txt')
+
+# number of features for HAN
+p_han = X.shape[1]
+
+# concatenation of reports matrix and HAN feature matrix
+X_whole = np.hstack(x_rep_raw, X)
+
+X_train, X_test, y_train, y_test = train_test_split(X_whole, y, test_size=TEST_SPLIT)
+
+train_base, test_base = X_train[:, :-p_han], X_test[:, :-p_han]
+train_HAN, test_HAN = X_train[:, -p_han:], X_test[:, -p_han:]
+
+# train HAN model (as in HAN_train_test.py
+logger.info("Training the model.")
+
+han_model = HAN(
+    MAX_WORDS_PER_SENT, MAX_SENT, 1, embedding_matrix,
+    word_encoding_dim, sentence_encoding_dim,
+    l1,l2,dropout
+)
+
+han_model.summary()
+
+han_model.compile(
+    optimizer=Adam(lr=0.0001), loss='binary_crossentropy',
+    metrics=['acc',rec]
+)
+"""
+checkpoint_saver = ModelCheckpoint(
+    filepath='./tmp/model.{epoch:02d}-{val_loss:.2f}.hdf5',
+    verbose=1, save_best_only=True
+)
+"""
+history = han_model.fit(
+    X_train, y_train, batch_size=batch_size, epochs=50,
+    validation_split = 0.2,
+    #callbacks=[checkpoint_saver]
+)
+
+
+# train base model
+# TFIDF + RF ?
+
+
+# evaluation of model (compare which one is best)

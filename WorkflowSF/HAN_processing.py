@@ -63,6 +63,11 @@ for i, review in enumerate(texts):
 # Transform the labels into a format Keras can handle
 y = np.asarray(labels)
 # We make a train/test split
+
+# save X and y to disk
+np.savetxt('X_HAN.txt', X)
+np.savetxt('y_HAN.txt', y)
+
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SPLIT)
 
 #####################################################
@@ -104,3 +109,5 @@ for word, index in word_tokenizer.word_index.items():
     if embedding_vector is not None:
         embedding_matrix[index] = embedding_vector
 
+# save embedding matrix
+np.savetxt('embedding_matrix_HAN.txt', embedding_matrix)
