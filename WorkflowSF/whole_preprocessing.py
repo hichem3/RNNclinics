@@ -21,7 +21,7 @@ logger.setLevel(logging.INFO)
 logger.addHandler(stdout)
 
 # constant variables
-TEST_SPLIT = ..
+#TEST_SPLIT = ..
 
 ## Fetching data
 logger.info("Loading data from Simbad and VCare")
@@ -35,13 +35,13 @@ target_vcare = target_vcare.loc[:, ['nip', 'id', 'screenfail']]
 target_simbad.drop(['prescreen', 'index'], axis=1, inplace=True)
 
 target = pd.concat([target_vcare, target_simbad], axis=0, ignore_index=True)
-logger.info("Tarfet shape and head:")
+logger.info("Target shape and head:")
 print(target.shape)
 target.head()
 
 table, path = 'event', '../data/cr_sfditep_2012.xlsx'
 
-df_rep_vc = rep_vc(table, engine, 'patient_target', 1) # SF only ou tout?
+df_rep_vc = rep_vc(table, engine, 'patient_target', 1)
 df_rep_sb = rep_sb(path, engine, 'patient_target_simbad', 1)
 
 df_rep_sb.rename({'id': 'patient_id'}, axis=1, inplace=True)
@@ -52,10 +52,21 @@ df_rep = df_rep.merge(target[['id', 'screenfail']], left_on='patient_id', right_
 logging.info("Displaying head of reports dataframe")
 df_rep.head()
 
-x_rep_raw, y_rep = df_rep['value'], df_rep['screenfail']
+#x_rep_raw, y_rep = df_rep['value'], df_rep['screenfail']
 
+# concatenate
+df_all=np.concatenate((df_rep['value'], df_rep['screenfail']),axis=1)
 
 # splitting data for train/test
-X_train, X_test, y_train, y_test = train_test_split(x_rep_raw, y_rep, test_size=TEST_SPLIT)
+#X_train, X_test, y_train, y_test = train_test_split(x_rep_raw, y_rep, test_size=TEST_SPLIT)
+
+# assign Train, Cval, Test
+df_all=df_all.assign(Cohort=np.random.choice(["Train","Val","Test"], df_all.shape[0], p=[0.7, 0.15, 0.15]))
 
 logging.info("Loading and splitting done")
+print(df_all.shape)
+df_all.head()
+
+#write file
+df_all.to_csv("df_all.csv")
+logging.info("Writing")
