@@ -63,6 +63,9 @@ df_rep.head()
 # assign Train, Cval, Test
 df_all=df_rep.assign(Cohort=np.random.choice(["Train","Val","Test"], df_rep.shape[0], p=[0.7, 0.15, 0.15]))
 
+# follow missing values
+df_all=df_rep.assign(CompleteValues=df_all['value'].apply(len)!=0)
+
 logging.info("Loading and splitting done")
 print(df_all.shape)
 df_all.head()
