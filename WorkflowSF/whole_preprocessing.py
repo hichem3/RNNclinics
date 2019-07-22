@@ -61,12 +61,12 @@ df_rep.head()
 #X_train, X_test, y_train, y_test = train_test_split(x_rep_raw, y_rep, test_size=TEST_SPLIT)
 
 # assign Train, Cval, Test
-df_rep=df_rep.assign(Cohort=np.random.choice(["Train","Val","Test"], df_rep.shape[0], p=[0.7, 0.15, 0.15]))
+df_all=df_rep.assign(Cohort=np.random.choice(["Train","Val","Test"], df_rep.shape[0], p=[0.7, 0.15, 0.15]))
 
 logging.info("Loading and splitting done")
-print(df_rep.shape)
-df_rep.head()
+print(df_all.shape)
+df_all.head()
 
 #write file
-df_rep.to_csv("df_rep.csv")
+df_all.to_csv("df_all.csv")
 logging.info("Writing")
