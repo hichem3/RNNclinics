@@ -55,18 +55,18 @@ df_rep.head()
 #x_rep_raw, y_rep = df_rep['value'], df_rep['screenfail']
 
 # concatenate
-df_all=np.concatenate((df_rep['value'], df_rep['screenfail']),axis=1)
+#df_all=np.concatenate((df_rep['value'], df_rep['screenfail']),axis=1)
 
 # splitting data for train/test
 #X_train, X_test, y_train, y_test = train_test_split(x_rep_raw, y_rep, test_size=TEST_SPLIT)
 
 # assign Train, Cval, Test
-df_all=df_all.assign(Cohort=np.random.choice(["Train","Val","Test"], df_all.shape[0], p=[0.7, 0.15, 0.15]))
+df_rep=df_rep.assign(Cohort=np.random.choice(["Train","Val","Test"], df_rep.shape[0], p=[0.7, 0.15, 0.15]))
 
 logging.info("Loading and splitting done")
-print(df_all.shape)
-df_all.head()
+print(df_rep.shape)
+df_rep.head()
 
 #write file
-df_all.to_csv("df_all.csv")
+df_rep.to_csv("df_rep.csv")
 logging.info("Writing")
