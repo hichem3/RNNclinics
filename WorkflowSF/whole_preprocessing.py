@@ -53,6 +53,12 @@ logging.info("Displaying head of reports dataframe")
 # drop to fit df_ph12
 df_rep.drop(['patient_id','id','feature'], axis=1, inplace=True)
 
+# why CR = 0 ????
+df_rep=df_rep.assign(CompleteValues=df_rep['value'].apply(len)!=0)
+pd.value_counts(df_rep['CompleteValues'])
+
+df_rep=df_rep[df_rep['CompleteValues']]
+
 #####
 # load Phase1/2 cohort from DITEP
 
