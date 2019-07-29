@@ -50,10 +50,14 @@ df_rep = pd.concat([df_rep_vc, df_rep_sb], ignore_index=True, sort=False)
 df_rep = df_rep.merge(target[['id', 'screenfail']], left_on='patient_id', right_on='id')
 logging.info("Displaying head of reports dataframe")
 
+# drop to fit df_ph12
+df_rep.drop(['patient_id','id','feature'], axis=1, inplace=True)
+
 #####
 # load Phase1/2 cohort from DITEP
 
 df_ph12=ph12_sb(path)
+df_ph12.drop(['DATE_SIGN_OK'], axis=1, inplace=True)
 
 df_all = pd.concat([df_rep, df_ph12], axis=0, ignore_index=True)
 
