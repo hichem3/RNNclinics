@@ -1,26 +1,66 @@
 # Text pre processing performed to train HAN
-# Author: Enrico Sartor
-# path on venv with X_REP_RAW cocrresponding to a file with subdirectories: pos and neg corresponding to med reports with positive or negative labels
+# Author: Enrico Sartor, Loic Verlingue
+
+# Create a logger to provide info on the state of the
+# script
+stdout = logging.StreamHandler(sys.stdout)
+stdout.setFormatter(logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+))
+logger = logging.getLogger('default')
+logger.setLevel(logging.INFO)
+logger.addHandler(stdout)
+
 
 #####################################################
 # Pre processing                                    #
 #####################################################
+
 logger.info("Pre-processing data.")
 
-imdb_dir = 'X_REP_RAW'
-labels = []
-texts = []
-for label_type in ['neg', 'pos']:
-    dir_name = os.path.join(imdb_dir, label_type)
-    for fname in sorted(os.listdir(dir_name)):
-        if fname[-4:] == '.txt':
-            f = open(os.path.join(dir_name, fname),encoding='utf-8',errors='ignore')
-            texts.append(f.read())
-            f.close()
-            if label_type == 'neg':
-                labels.append(0)
-            else:
-                labels.append(1)
+# Loic version
+
+df_all=pd.read_csv(os.path.join(data_dir, "df_all.csv"), encoding='utf-8')
+df_all=df_all[df_all['CompleteValues']]
+
+labels = df_all['screenfail']
+
+texts = df_all['value']
+texts = pd.Series.tolist(texts)
+split = df_all['Cohort']
+
+
+"""
+logger.info("Pre-processing Kaggle's data.")
+
+# Load Kaggle's IMDB example data
+data = pd.read_csv('labeledTrainData.tsv', sep='\t')
+
+
+# Do some basic cleaning of the review text
+def remove_quotations(text):
+
+    text = re.sub(r"\\", "", text)
+    text = re.sub(r"\'", "", text)
+    text = re.sub(r"\"", "", text)
+    return text
+
+
+def remove_html(text):
+
+    tags_regex = re.compile(r'<.*?>')
+    return tags_regex.sub('', text)
+
+
+data['review'] = data['review'].apply(remove_quotations)
+data['review'] = data['review'].apply(remove_html)
+data['review'] = data['review'].apply(lambda x: x.strip().lower())
+
+# Get the data and the sentiment
+texts = data['review'].values
+labels = data['sentiment'].values
+del data
+"""
 
 #####################################################
 # Tokenization                                      #
@@ -28,7 +68,7 @@ for label_type in ['neg', 'pos']:
 logger.info("Tokenization.")
 
 # Build a Keras Tokenizer that can encode every token
-word_tokenizer = Tokenizer(num_words=MAX_VOC_SIZE)
+word_tokenizer = Tokenizer(num_words=max_words)
 word_tokenizer.fit_on_texts(texts)
 
 # Construct the input matrix. This should be a nd-array of
@@ -37,6 +77,7 @@ word_tokenizer.fit_on_texts(texts)
 # any predictions due to the attention mechanism.
 X = np.zeros((len(texts), MAX_SENT, MAX_WORDS_PER_SENT), dtype='int32')
 
+#review=texts[3]
 for i, review in enumerate(texts):
     sentences = sent_tokenize(review)
     tokenized_sentences = word_tokenizer.texts_to_sequences(
@@ -52,7 +93,7 @@ for i, review in enumerate(texts):
         tokenized_sentences = tokenized_sentences[0:MAX_SENT]
     else:
         tokenized_sentences = np.pad(
-            tokenized_sentences, ((0,pad_size),(0,0)),
+            tokenized_sentences, ((0, pad_size), (0, 0)),
             mode='constant', constant_values=0
         )
 
@@ -61,14 +102,22 @@ for i, review in enumerate(texts):
     X[i] = tokenized_sentences[None, ...]
 
 # Transform the labels into a format Keras can handle
-y = np.asarray(labels)
+y = np.asarray(labels)  # to_categorical(labels)
+
 # We make a train/test split
+#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SPLIT)
 
-# save X and y to disk
-np.savetxt('X_HAN.txt', X)
-np.savetxt('y_HAN.txt', y)
+X_train, X_test = X[df_all['Cohort']=='Train'], X[df_all['Cohort']=='Test']
+y_train, y_test = y[df_all['Cohort']=='Train'], y[df_all['Cohort']=='Test']
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=TEST_SPLIT)
+#X_train.shape, y_train.shape
+
+"""
+X_train=X_train[:60]
+X_test=X_test[:10]
+y_train=y_train[:60]
+y_test=y_test[:10]
+"""
 
 #####################################################
 # Word Embeddings                                   #
@@ -79,12 +128,17 @@ logger.info(
 
 # Now, we need to build the embedding matrix. For this we use
 # a pretrained (on the wikipedia corpus) 100-dimensional GloVe
-# model.
+# model.  # to update
 
 # Load the embeddings from a file
 embeddings = {}
-#r'C:\Users\Enrico\Desktop\Projet Innovation\
-with open('w2v_reports_128.vec', encoding='utf-8') as file:
+# r'C:\Users\Enrico\Desktop\Projet Innovation\
+
+with open(os.path.join(data_dir, "w2v_reports_128.vec"),
+          encoding='utf-8') as file:  # imdb_w2v.txt . w2v_reports_128.vec
+
+#with open('w2v_reports_128.vec',
+#          encoding='utf-8') as file:  # imdb_w2v.txt . w2v_reports_128.vec
     dummy = file.readline()
     for line in file:
         values = line.split()
@@ -93,9 +147,10 @@ with open('w2v_reports_128.vec', encoding='utf-8') as file:
 
         embeddings[word] = coefs
 
+#embeddings['fatigue']
 # Initialize a matrix to hold the word embeddings
 embedding_matrix = np.random.random(
-    (len(word_tokenizer.word_index) + 1, GLOVE_DIM)
+    (len(word_tokenizer.word_index) + 1, embedding_dim)
 )
 
 # Let the padded indices map to zero-vectors. This will
@@ -108,6 +163,3 @@ for word, index in word_tokenizer.word_index.items():
     embedding_vector = embeddings.get(word)
     if embedding_vector is not None:
         embedding_matrix[index] = embedding_vector
-
-# save embedding matrix
-np.savetxt('embedding_matrix_HAN.txt', embedding_matrix)
