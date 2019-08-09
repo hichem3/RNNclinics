@@ -1,6 +1,39 @@
 # script to run hyperopt on HAN (build and data from related scripts)
 # Authors: Enrico Sartor, Loic Verlingue
 
+from WorkflowSF import han_model
+from hyperopt import STATUS_OK, tpe, hp, Trials, fmin
+
+import os, re, sys, csv, logging
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+import keras
+from keras import backend as K
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.sequence import pad_sequences
+from keras.optimizers import Adam
+from keras.callbacks import ModelCheckpoint, EarlyStopping
+from keras.utils import to_categorical
+from keras.layers import (
+    Dense, GRU, TimeDistributed, Input,
+    Embedding, Bidirectional, Lambda, Dropout
+)
+from keras.models import Model
+# from keras_han.layers import AttentionLayer
+
+from nltk.tokenize import sent_tokenize
+from keras import regularizers
+from sklearn.model_selection import train_test_split, RandomizedSearchCV, \
+    GridSearchCV, StratifiedKFold
+from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.metrics import make_scorer, f1_score, recall_score, fbeta_score,\
+    precision_recall_fscore_support, accuracy_score, precision_score, \
+    classification_report, confusion_matrix, roc_curve, roc_auc_score, \
+    precision_recall_curve, average_precision_score, auc
+
+
+
 #####################################################
 # Model Training                                    #
 #####################################################
