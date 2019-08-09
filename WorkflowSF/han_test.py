@@ -3,10 +3,9 @@
 from WorkflowSF import HAN
 #from WorkflowSF import han_model
 from WorkflowSF import AttentionLayer
-from WorkflowSF import utils
 import keras
 from keras.models import load_model
-from scripts.utils import rec_scorer                                     
+from WorkflowSF.utils import rec_scorer                                     
 
 from keras import backend as K
 from keras.layers import (
