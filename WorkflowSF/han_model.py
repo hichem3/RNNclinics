@@ -1,17 +1,46 @@
-# Author : Enrico Sartor
-# Author: Enrico Sartor
+################################
+# Author : Enrico Sartor, Loic Verlingue
+################################
 
-##############################################################################
-#layers.py
-#load HAN_utils.py
 """
-File containing custom Keras layers that use the
-attention mechanism.
+Script to build a han_model containing custom Keras layers that use the attention mechanism.
+This function can be used to build a han_model to load trained weights (instead of loading custom objects in saved model) or to run new training.
+If runing new training, setting the weights of the embedding layer might be a good idea
 """
 
+#################
+# hyperparameters
+#################
+MAX_WORDS_PER_SENT = 40
+MAX_SENT = 80
+max_words = 10000
+embedding_dim = 128
+TEST_SPLIT = 0.2
+word_encoding_dim=256
+sentence_encoding_dim=256
+l1=0
+l2=0
+dropout=0.2
+MAX_EVALS = 10 # number of models to evaluate with hyperopt
+Nepochs = 100
+
+# importing libraries & modules
+import os
+import pandas as pd
+import numpy as np
 import keras
 from keras import backend as K
+from keras.layers import (
+    Dense, GRU, TimeDistributed, Input,
+    Embedding, Bidirectional, Lambda, Dropout
+)
+from keras.models import Model
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.sequence import pad_sequences
+from keras import regularizers
 
+#from keras_han.layers import AttentionLayer
+# define AttentionLayer 
 class AttentionLayer(keras.layers.Layer):
     def __init__(self, context_vector_length=100, **kwargs):
         """
@@ -89,16 +118,6 @@ class AttentionLayer(keras.layers.Layer):
 
 
 ##############################################################################
-#model.py
-
-import keras
-from keras.layers import (
-    Dense, GRU, TimeDistributed, Input,
-    Embedding, Bidirectional, Lambda
-)
-from keras.models import Model
-#from keras_han.layers import AttentionLayer
-
 
 class HAN(Model):
     def __init__(
@@ -283,3 +302,24 @@ class HAN(Model):
 
         return Model(self.input, dummy_layer).predict(X)
 
+##################
+# embedding matrix
+##################
+
+# Initialize a matrix to hold the word embeddings
+embedding_matrix = np.random.random(
+    (max_words + 1, embedding_dim)
+)
+
+
+##################
+#create model
+##################
+
+han_model = HAN(
+        MAX_WORDS_PER_SENT, MAX_SENT, 1, embedding_matrix,  # 1 is output size
+        word_encoding_dim,
+        sentence_encoding_dim,
+        l1,  
+        l2,  
+        dropout)
