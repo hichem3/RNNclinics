@@ -1,5 +1,7 @@
-# Author: Enrico Sartor
-# follows HANmodel.py and ProcesingHAN.py
+# Author: Enrico Sartor, Loic Verlingue
+
+from WorkflowSF import han_model
+#todo ...
 
 ##############################################################################
 # Create a logger to provide info on the state of the
@@ -12,25 +14,14 @@ logger = logging.getLogger('default')
 logger.setLevel(logging.INFO)
 logger.addHandler(stdout)
 
-##############################################################################
-# set hyperparameters
-
-MAX_WORDS_PER_SENT = 40
-MAX_SENT = 80
-MAX_VOC_SIZE = 10000 
-GLOVE_DIM = 256  
-TEST_SPLIT = 0.2
-word_encoding_dim = 70
-sentence_encoding_dim = 50
-l1 = 0.0015
-l2 = 0.025
-dropout = 0.
-batch_size = 96
 
 #####################################################
-# Model Training                                    #
+# building model and loading weights or load custom objects from saved models
 #####################################################
-logger.info("Training the model.")
+
+# build and load wieghts
+
+logger.info("Building the model.")
 
 han_model = HAN(
     MAX_WORDS_PER_SENT, MAX_SENT, 1, embedding_matrix,
@@ -40,6 +31,10 @@ han_model = HAN(
 
 han_model.summary()
 
+#load weights
+# todo
+
+'''
 han_model.compile(
     optimizer=Adam(lr=0.0001), loss='binary_crossentropy',
     metrics=['acc',rec]
@@ -55,6 +50,13 @@ history = han_model.fit(
     validation_split = 0.2,
     #callbacks=[checkpoint_saver]
 )
+'''
+#####
+# of loading model directly
+logger.info("Load the model.")
+
+han_model=load_model(os.path.join(results_dir, out_file+'_model.hd5'), custom_objects={'AttentionLayer': AttentionLayer, 'HAN':HAN})
+#todo
 
 ################################
 # check results
