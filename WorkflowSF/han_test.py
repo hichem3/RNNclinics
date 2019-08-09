@@ -1,7 +1,16 @@
 # Author: Enrico Sartor, Loic Verlingue
 
-from WorkflowSF import han_model
+from WorkflowSF import HAN
+#from WorkflowSF import han_model
+from WorkflowSF import AttentionLayer
+import keras
+from keras.models import load_model
+ 
 #todo ...
+
+#
+# model path
+file_path=.
 
 ##############################################################################
 # Create a logger to provide info on the state of the
@@ -55,7 +64,12 @@ history = han_model.fit(
 # of loading model directly
 logger.info("Load the model.")
 
-han_model=load_model(os.path.join(results_dir, out_file+'_model.hd5'), custom_objects={'AttentionLayer': AttentionLayer, 'HAN':HAN})
+han_model = load_model({file_path}, custom_objects={
+    'HAN': HAN,
+    'AttentionLayer': AttentionLayer
+})
+
+#han_model=load_model(os.path.join(results_dir, out_file+'_model.hd5'), custom_objects={'AttentionLayer': AttentionLayer, 'HAN':HAN})
 #todo
 
 ################################
