@@ -2,6 +2,7 @@
 # Authors: Enrico Sartor, Loic Verlingue
 
 from WorkflowSF import han_model
+from WorkflowSF import han_processing # to implement in the present code
 from hyperopt import STATUS_OK, tpe, hp, Trials, fmin
 
 import os, re, sys, csv, logging
