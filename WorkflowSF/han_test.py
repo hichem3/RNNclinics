@@ -6,8 +6,17 @@ from WorkflowSF import AttentionLayer
 from WorkflowSF import utils
 import keras
 from keras.models import load_model
- 
-#todo ...
+from scripts.utils import rec_scorer                                     
+
+from keras import backend as K
+from keras.layers import (
+    Dense, GRU, TimeDistributed, Input,
+    Embedding, Bidirectional, Lambda, Dropout
+)
+from keras.models import Model
+from keras.preprocessing.text import Tokenizer
+from keras.preprocessing.sequence import pad_sequences
+from keras import regularizers
 
 #
 # model path
