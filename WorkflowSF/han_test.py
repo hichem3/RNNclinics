@@ -3,6 +3,7 @@
 from WorkflowSF import HAN
 #from WorkflowSF import han_model
 from WorkflowSF import AttentionLayer
+from WorkflowSF import utils
 import keras
 from keras.models import load_model
  
