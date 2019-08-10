@@ -1,12 +1,12 @@
 # Author: Enrico Sartor, Loic Verlingue
 
 from WorkflowSF import HAN
-#from WorkflowSF import han_model
 from WorkflowSF import AttentionLayer
-import keras
-from keras.models import load_model
-from WorkflowSF.utils import rec_scorer                                     
 
+import os
+import pandas as pd
+import numpy as np
+import keras
 from keras import backend as K
 from keras.layers import (
     Dense, GRU, TimeDistributed, Input,
@@ -16,8 +16,53 @@ from keras.models import Model
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras import regularizers
+from keras.models import load_model
 
-#
+
+
+def rec_scorer(y_true, y_pred):
+    '''Calculates the recall, a metric for multi-label classification of
+    how many relevant items are selected.
+    '''
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+    recall = true_positives / (possible_positives + K.epsilon())
+    return recall
+
+
+def f1_scorer(y_true, y_pred, threshold_shift=0):
+    beta = 1
+    # just in case of hipster activation at the final layer
+    y_pred = K.clip(y_pred, 0, 1)
+    # shifting the prediction threshold from .5 if needed
+    y_pred_bin = K.round(y_pred + threshold_shift)
+    tp = K.sum(K.round(y_true * y_pred_bin)) + K.epsilon()
+    fp = K.sum(K.round(K.clip(y_pred_bin - y_true, 0, 1)))
+    fn = K.sum(K.round(K.clip(y_true - y_pred, 0, 1)))
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    beta_squared = beta ** 2
+    return (beta_squared + 1) * (precision * recall) / (
+                beta_squared * precision + recall + K.epsilon())
+
+
+def f2_scorer(y_true, y_pred, threshold_shift=0):
+    beta = 2
+    # just in case of hipster activation at the final layer
+    y_pred = K.clip(y_pred, 0, 1)
+    # shifting the prediction threshold from .5 if needed
+    y_pred_bin = K.round(y_pred + threshold_shift)
+    tp = K.sum(K.round(y_true * y_pred_bin)) + K.epsilon()
+    fp = K.sum(K.round(K.clip(y_pred_bin - y_true, 0, 1)))
+    fn = K.sum(K.round(K.clip(y_true - y_pred, 0, 1)))
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    beta_squared = beta ** 2
+    return (beta_squared + 1) * (precision * recall) / (
+                beta_squared * precision + recall + K.epsilon())
+
+
+############################################################################
 # model path
 file_path=.
 
@@ -33,53 +78,15 @@ logger.setLevel(logging.INFO)
 logger.addHandler(stdout)
 
 
-#####################################################
-# building model and loading weights or load custom objects from saved models
-#####################################################
-
-# build and load wieghts
-
-logger.info("Building the model.")
-
-han_model = HAN(
-    MAX_WORDS_PER_SENT, MAX_SENT, 1, embedding_matrix,
-    word_encoding_dim, sentence_encoding_dim,
-    l1,l2,dropout
-)
-
-han_model.summary()
-
-#load weights
-# todo
-
-'''
-han_model.compile(
-    optimizer=Adam(lr=0.0001), loss='binary_crossentropy',
-    metrics=['acc',rec]
-)
-"""
-checkpoint_saver = ModelCheckpoint(
-    filepath='./tmp/model.{epoch:02d}-{val_loss:.2f}.hdf5',
-    verbose=1, save_best_only=True
-)
-"""
-history = han_model.fit(
-    X_train, y_train, batch_size=batch_size, epochs=50,
-    validation_split = 0.2,
-    #callbacks=[checkpoint_saver]
-)
-'''
 #####
-# of loading model directly
+# loading model
 logger.info("Load the model.")
 
-han_model = load_model({file_path}, custom_objects={
-    'HAN': HAN,
-    'AttentionLayer': AttentionLayer
-})
+han_model = load_model("results/HAN_100epoch10eval_model.hd5", custom_objects={'HAN': HAN,'AttentionLayer': AttentionLayer, 'rec_scorer':rec_scorer, 'f1_scorer':f1_scorer, 'f2_scorer':f2_scorer})
 
-#han_model=load_model(os.path.join(results_dir, out_file+'_model.hd5'), custom_objects={'AttentionLayer': AttentionLayer, 'HAN':HAN})
-#todo
+###############################
+# load new data
+
 
 ################################
 # check results
