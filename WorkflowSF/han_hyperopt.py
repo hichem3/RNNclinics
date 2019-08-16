@@ -3,15 +3,7 @@
 # "Save the best model" line 266 : is all oK?
 # the custom metrics scores in CV
 
-
-
-# Yang, Zichao, et al. "Hierarchical attention networks for document classification."
-# Proceedings of the 2016 Conference of the North American Chapter of the Association
-# for Computational Linguistics: Human Language Technologies. 2016.
-#
-# Code inspired from: FlorisHoogenboom.
-# https://github.com/FlorisHoogenboom/keras-han-for-docla
-##
+# Authors: Loic Verlingue, Enrico Sartor, Valentin Charvet
 
 ################
 # directories
