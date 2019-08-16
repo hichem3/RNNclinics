@@ -1,16 +1,29 @@
-# Author : Enrico Sartor
-# Author: Enrico Sartor
+################################
+# Authors : Enrico Sartor, Loic Verlingue
+################################
 
-##############################################################################
-#layers.py
-#load HAN_utils.py
 """
-File containing custom Keras layers that use the
-attention mechanism.
+Functions to build a han_model containing custom Keras layers that use the attention mechanism.
+This function can be used to run new training or to build a han_model to load trained weights (instead of loading custom objects in saved model).
+If runing new training, setting the weights of the embedding layer might be a good idea
 """
 
+#import os
+#import pandas as pd
+import numpy as np
 import keras
 from keras import backend as K
+from keras.layers import (
+    Dense, GRU, TimeDistributed, Input,
+    Embedding, Bidirectional, Lambda, Dropout
+)
+from keras.models import Model
+#from keras.preprocessing.text import Tokenizer
+#from keras.preprocessing.sequence import pad_sequences
+#from keras import regularizers
+
+
+#from keras_han.layers import AttentionLayer
 
 class AttentionLayer(keras.layers.Layer):
     def __init__(self, context_vector_length=100, **kwargs):
@@ -90,14 +103,6 @@ class AttentionLayer(keras.layers.Layer):
 
 ##############################################################################
 #model.py
-
-import keras
-from keras.layers import (
-    Dense, GRU, TimeDistributed, Input,
-    Embedding, Bidirectional, Lambda
-)
-from keras.models import Model
-#from keras_han.layers import AttentionLayer
 
 
 class HAN(Model):
