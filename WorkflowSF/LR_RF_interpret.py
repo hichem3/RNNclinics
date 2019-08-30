@@ -124,12 +124,14 @@ rf = RandomForestClassifier(n_estimators=16, min_samples_leaf=0.001, max_feature
 rf.fit(x_w2v, y_rep)
 
 # LR
-LR = LogisticRegression(C=0.1, penalty='l1')
+LR = LogisticRegression(C=0.890919191919192, penalty='l1')
 LR.fit(x_w2v, y_rep)
 
 ###############
 # evaluation        ##!tocheck ##!todo for LR
-y_pred_num = rf.predict(x_test)
+x_w2v_test = w2v_cluster.fit(x_test.apply(lambda s:  s.split(' '))).transform(x_test.apply(lambda s:  s.split(' ')))
+
+y_pred_num = LR.predict(x_w2v_test)
 
 ### curves
 precision, recall, _ =precision_recall_curve(y_test,y_pred_num)
