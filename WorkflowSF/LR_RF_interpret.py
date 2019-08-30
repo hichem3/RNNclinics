@@ -112,8 +112,8 @@ plt.scatter(words_embedded[:, 0], words_embedded[:, 1],
             c=w2v_cluster.cluster_ids_, s=10, alpha=0.8)
 plt.savefig(os.path.join(results_dir,out_file+'_w2v_clusters.pdf'))
 
-
-#feature_names = tfidf.get_feature_names() # waht about for v2w? same?
+#feature_names = tfidf.get_feature_names() 
+# Valentin: for w2v_cluster comment obtenir les clusters ? je pense que le chiffre correspond toujours à la table de décodage que l'on avait faite
 print(feature_names)
 
 ###############
