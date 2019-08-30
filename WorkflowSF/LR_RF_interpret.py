@@ -62,6 +62,7 @@ import matplotlib.pyplot as plt
 
 from inspect import signature
 
+os.chdir(scripts_dir)
 from w2v_clusters import WordClustering
 
 sns.set()
