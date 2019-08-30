@@ -4,7 +4,9 @@ Created on Fri Aug 30 14:28:59 2019
 
 script to intepret models decisions
 
-@author: Valentin Charvet,, Loic Verlingue
+UNTESTED
+
+@author: Valentin Charvet, Loic Verlingue
 """
 
 out_file = 'MLmodels.csv'
