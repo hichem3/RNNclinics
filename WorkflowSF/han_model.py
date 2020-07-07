@@ -7,6 +7,31 @@ Functions to build a han_model containing custom Keras layers that use the atten
 This function can be used to run new training or to build a han_model to load trained weights (instead of loading custom objects in saved model).
 If runing new training, setting the weights of the embedding layer might be a good idea
 """
+'''
+################
+# directories
+################
+out_file = 'HAN_100epoch10eval'
+data_dir="/mnt/beegfs/scratch/l_verlingue/NLP/CondaCloneWrkFlow/data/"
+results_dir="/mnt/beegfs/scratch/l_verlingue/NLP/CondaCloneWrkFlow/results/"
+
+#################
+
+# hyperparameters
+#################
+MAX_WORDS_PER_SENT = 40
+MAX_SENT = 80
+max_words = 10000
+embedding_dim = 128
+TEST_SPLIT = 0.2
+word_encoding_dim=256
+sentence_encoding_dim=256
+l1=0
+l2=0
+dropout=0.2
+MAX_EVALS = 10 # number of models to evaluate with hyperopt
+Nepochs = 100
+'''
 
 #import os
 #import pandas as pd
@@ -288,3 +313,26 @@ class HAN(Model):
 
         return Model(self.input, dummy_layer).predict(X)
 
+'''
+##################
+# embedding matrix
+##################
+
+# Initialize a matrix to hold the word embeddings
+embedding_matrix = np.random.random(
+    (max_words + 1, embedding_dim)
+)
+
+
+##################
+#create model
+##################
+
+han_model = HAN(
+        MAX_WORDS_PER_SENT, MAX_SENT, 1, embedding_matrix,  # 1 is output size
+        word_encoding_dim,
+        sentence_encoding_dim,
+        l1,  
+        l2,  
+        dropout)
+'''

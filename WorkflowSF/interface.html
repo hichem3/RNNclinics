@@ -1,0 +1,47 @@
+    <!DOCTYPE html>
+
+
+    <html>
+        <head>
+            <meta charset="utf-8">
+            <title>DITEP - Prediction</title>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <link  rel="stylesheet"  type="text/css" href="/static/bootstrap.css" >
+            <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/p5.min.js"></script>
+            <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.9.0/addons/p5.dom.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+                    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+                    crossorigin="anonymous"></script>
+            <script src="{{url_for('static',filename='script.js')}}"></script>
+        </head>
+        <body id="bodyy" style="background-image: url('static/bg.jpg') " >
+                <div class="container">
+                    <h5>Our prediction tool helps doctors decide whether a patient is able to enter the phase 1
+                        of the clinical trials based on their medical report.</br>
+                        Therefore, enter the report manually or automatically by uploading a file.
+                    </h5>
+                    <form name="search" action="." method="post">
+                        <div style="display:inline-block; width:100%;">
+                            <textarea style="margin-bottom: 10px; margin-right: 10px; resize:none; width:45%; float:left;"
+                                      id="t1" name="text1" class="form-control" rows="7" autofocus="true"
+                                      onkeyup='$("#t2").val($(this).val())' onchange='$("#t2").val($(this).val())'>{{t}}</textarea>
+
+                            <textarea style="margin-bottom: 10px; resize:none; width:45%; float:right;"
+                                      id="t2" class="form-control" rows="7" disabled>{{t}}</textarea>
+                        </div>
+                        <div style="display:inline-block">
+                            <input class="btn btn-primary" type="reset" value="Clear">
+                            <label class="btn btn-primary" for="getFile" >Upload File</label>
+                            <input id='getFile' style="display:none;" type='file' accept='text/plain' onchange='openFile(event)' >
+                            <input type="submit" value="submit" class="btn btn-primary" >
+                        </div>
+                        <h4 style="color:green;"></br>Results:</h4>
+                        <div style="display:inline-block;">
+                            <h1 id="number" value="" style='float:left;'>{{n}}</h1>
+                        </div>
+                    </form>
+                </div>
+
+        </body>
+    </html>
